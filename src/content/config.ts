@@ -7,7 +7,7 @@ const books = defineCollection({
     originalTitle: z.string().optional(), // 原版书名（中文书留空）
     author: z.string(),
     cover: z.string(),                    // 封面图片路径
-    rating: z.number().min(0).max(5),     // 星级评分 0-5
+    rating: z.number().min(0).max(10),    // 评分 0-10，显示时换算为 5 星
     readingStart: z.date(),               // 开始阅读日期
     readingEnd: z.date().optional(),      // 结束阅读日期
     status: z.enum(['已读', '在读', '想读']),
@@ -28,10 +28,29 @@ const movies = defineCollection({
     originalTitle: z.string().optional(), // 原片名
     director: z.string().optional(),
     poster: z.string(),                   // 海报图片路径
-    rating: z.number().min(0).max(5),
+    rating: z.number().min(0).max(10),
+    bgmid: z.number().optional(),          // Bangumi 条目 ID
     watchDate: z.date(),                  // 观看日期
     year: z.number(),                     // 上映年份
     type: z.enum(['电影', '剧集', '纪录片', '动画']),
+    tags: z.array(z.string()).default([]),
+    summary: z.string().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+// 🎮 游戏收藏
+const games = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    originalTitle: z.string().optional(), // 原版名称
+    developer: z.string().optional(),      // 开发商
+    poster: z.string(),                    // 封面图片路径
+    rating: z.number().min(0).max(10),
+    bgmid: z.number().optional(),          // Bangumi 条目 ID
+    playDate: z.date(),                    // 开始游玩日期
+    year: z.number(),                      // 发行年份
+    platform: z.enum(['PC', 'Switch', 'PS5', 'Xbox', 'iOS', 'Android', '多平台', '其他']),
     tags: z.array(z.string()).default([]),
     summary: z.string().optional(),
     draft: z.boolean().default(false),
@@ -50,4 +69,4 @@ const diary = defineCollection({
   }),
 });
 
-export const collections = { books, movies, diary };
+export const collections = { books, movies, games, diary };

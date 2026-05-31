@@ -1,6 +1,6 @@
-# 📖 我的书架 — 个人博客
+# 📖 Yzher's Blog — 个人博客
 
-基于 [Astro 5](https://astro.build) 的个人阅读/观影/日记博客，部署在腾讯云服务器上。
+基于 [Astro 5](https://astro.build) 的个人阅读/观影/游戏/日记博客，部署在腾讯云服务器上。
 
 ## 技术栈
 
@@ -10,8 +10,9 @@
 | 前端交互 | Vue 3 (星级评分组件) |
 | 样式 | Tailwind CSS 3 |
 | 内容管理 | Astro Content Collections |
-| 反向代理 | Nginx 1.31 |
-| 网盘 | Alist v3.60 (systemd 管理) |
+| 封面获取 | Open Library (书籍) / Bangumi (影视&游戏) |
+| 反向代理 | Nginx |
+| 网盘 | Alist (systemd 管理) |
 
 ## 项目结构
 
@@ -27,16 +28,20 @@ my-blog/
 │   └── uploads/              # 电子书存放目录（不入 git）
 └── src/
     ├── content/
-    │   ├── config.ts         # Content Collections schema（书籍/电影/日记）
-    │   ├── books/            # 272 本书籍 markdown
+    │   ├── config.ts         # Content Collections schema（书籍/影视/游戏/日记）
+    │   ├── books/            # 书籍 markdown
     │   ├── movies/           # 影视 markdown
+    │   ├── games/            # 游戏 markdown
     │   └── diary/            # 日记 markdown
     ├── pages/
-    │   ├── index.astro       # 首页（4列网格展示最近在读/在看）
+    │   ├── index.astro       # 首页（横滚卡片展示最近在读/在看/在玩）
     │   ├── books/
     │   │   ├── index.astro   # 书架列表（瀑布流 + 排序/筛选/标签）
     │   │   └── [slug].astro  # 书籍详情（含下载按钮）
     │   ├── movies/
+    │   │   ├── index.astro
+    │   │   └── [slug].astro
+    │   ├── games/
     │   │   ├── index.astro
     │   │   └── [slug].astro
     │   └── diary/
@@ -45,6 +50,7 @@ my-blog/
     ├── components/
     │   ├── BookCard.astro    # 书籍卡片（封面占位/可点击标签）
     │   ├── MovieCard.astro
+    │   ├── GameCard.astro
     │   ├── DiaryCard.astro
     │   ├── Header.astro      # 导航栏（含 alist 网盘入口）
     │   ├── Footer.astro
@@ -90,6 +96,19 @@ summary: "《三国演义》—— 罗贯中 著。"
 ### 5. 标签系统
 - 书籍卡片上的标签可点击，跳转到 `/books?tag=xxx`
 - 书架页面顶部有 Top 20 标签快捷筛选
+
+### 6. 游戏记录
+仿照影视的 Schema，支持平台分类：PC / Switch / PS5 / Xbox / iOS / Android / 多平台 / 其他
+
+### 7. 封面自动匹配
+
+| 内容 | 来源 | 脚本 |
+|------|------|------|
+| 📚 书籍 | Open Library API | `fetch_covers.py`* |
+| 🎬 影视 | Bangumi (bgm.tv) | `fetch_bangumi_covers.py` |
+| 🎮 游戏 | Bangumi (bgm.tv) | `fetch_bangumi_covers.py` |
+
+\* Open Library 中文书覆盖率有限，建议手动填写封面 URL 或从 PDF/EPUB 提取（`match_and_covers.py`）
 
 ## 常用命令
 
@@ -152,3 +171,19 @@ systemctl restart alist
 | tags | string[] | ❌ | 标签数组 |
 | summary | string | ❌ | 摘要 |
 | draft | boolean | ❌ | 草稿，true 则隐藏 |
+
+## 游戏 Schema 参考
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|:--:|------|
+| title | string | ✅ | 游戏名 |
+| originalTitle | string | ❌ | 原版名称 |
+| developer | string | ❌ | 开发商 |
+| poster | string | ✅ | 封面 URL，空字符串则显示占位 |
+| rating | number 0-5 | ✅ | 评分 |
+| playDate | date | ✅ | 开始游玩日期 |
+| year | number | ✅ | 发行年份 |
+| platform | enum | ✅ | PC / Switch / PS5 / Xbox / iOS / Android / 多平台 / 其他 |
+| tags | string[] | ❌ | 标签数组 |
+| summary | string | ❌ | 摘要 |
+| draft | boolean | ❌ | 草稿 |

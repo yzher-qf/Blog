@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GameCard from '../../components/GameCard.astro';
+import { getCollection } from 'astro:content';
+
+const games = (await getCollection('games', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.playDate.getTime() - a.data.playDate.getTime());
+---
+
+<BaseLayout title="游戏记录" description="玩过的游戏">
+
+  <div class="mb-12">
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">🎮 游戏记录</h1>
+    <p class="text-warm-800">共 {games.length} 款</p>
+  </div>
+
+  {
+    games.length > 0 ? (
+      <div class="masonry">
+        {games.map((game) => <GameCard {game} />)}
+      </div>
+    ) : (
+      <div class="text-center py-20">
+        <p class="text-6xl mb-4">🎮</p>
+        <p class="text-lg text-warm-800">还没有游戏记录</p>
+        <p class="text-sm text-warm-800 mt-2">在 src/content/games/ 下创建你的第一篇游戏记录</p>
+      </div>
+    )
+  }
+</BaseLayout>

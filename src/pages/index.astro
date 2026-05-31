@@ -2,16 +2,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BookCard from '../components/BookCard.astro';
 import MovieCard from '../components/MovieCard.astro';
+import GameCard from '../components/GameCard.astro';
 import DiaryCard from '../components/DiaryCard.astro';
 import { getCollection } from 'astro:content';
 
 const books = (await getCollection('books', ({ data }) => !data.draft))
   .sort((a, b) => b.data.readingStart.getTime() - a.data.readingStart.getTime())
-  .slice(0, 8);
+  .slice(0, 10);
 
 const movies = (await getCollection('movies', ({ data }) => !data.draft))
   .sort((a, b) => b.data.watchDate.getTime() - a.data.watchDate.getTime())
-  .slice(0, 8);
+  .slice(0, 10);
+
+const games = (await getCollection('games', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.playDate.getTime() - a.data.playDate.getTime())
+  .slice(0, 10);
 
 const diaries = (await getCollection('diary', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
@@ -23,10 +28,10 @@ const diaries = (await getCollection('diary', ({ data }) => !data.draft))
   <!-- Hero 区域 -->
   <section class="text-center py-12 md:py-20">
     <h1 class="text-4xl md:text-5xl font-serif font-bold text-warm-900 mb-4">
-      📖 阅读 · 观影 · 生活
+      📖 阅读 · 🎬 观影 · 🎮 游戏 · 生活
     </h1>
     <p class="text-lg text-warm-800 max-w-2xl mx-auto">
-      记录读过的每一本书、看过的每一部电影、度过的每一个日子
+      记录读过的书、看过的电影、玩过的游戏、度过的日子
     </p>
   </section>
 
@@ -42,8 +47,12 @@ const diaries = (await getCollection('diary', ({ data }) => !data.draft))
             查看全部 →
           </a>
         </div>
-        <div class="masonry">
-          {books.map((book) => <BookCard {book} />)}
+        <div class="flex gap-5 overflow-x-auto pb-2">
+          {books.map((book) => (
+            <div class="flex-shrink-0 w-44 sm:w-48 md:w-52 lg:w-56">
+              <BookCard {book} />
+            </div>
+          ))}
         </div>
       </section>
     )
@@ -61,8 +70,35 @@ const diaries = (await getCollection('diary', ({ data }) => !data.draft))
             查看全部 →
           </a>
         </div>
-        <div class="masonry">
-          {movies.map((movie) => <MovieCard {movie} />)}
+        <div class="flex gap-5 overflow-x-auto pb-2">
+          {movies.map((movie) => (
+            <div class="flex-shrink-0 w-44 sm:w-48 md:w-52 lg:w-56">
+              <MovieCard {movie} />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 🎮 最近在玩 -->
+  {
+    games.length > 0 && (
+      <section class="mb-16">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-serif font-bold text-warm-900">
+            🎮 最近在玩
+          </h2>
+          <a href="/games" class="text-sm text-accent hover:underline font-medium">
+            查看全部 →
+          </a>
+        </div>
+        <div class="flex gap-5 overflow-x-auto pb-2">
+          {games.map((game) => (
+            <div class="flex-shrink-0 w-44 sm:w-48 md:w-52 lg:w-56">
+              <GameCard {game} />
+            </div>
+          ))}
         </div>
       </section>
     )
@@ -89,7 +125,7 @@ const diaries = (await getCollection('diary', ({ data }) => !data.draft))
 
   <!-- 空状态 -->
   {
-    books.length === 0 && movies.length === 0 && diaries.length === 0 && (
+    books.length === 0 && movies.length === 0 && games.length === 0 && diaries.length === 0 && (
       <div class="text-center py-20">
         <p class="text-6xl mb-4">📭</p>
         <p class="text-lg text-warm-800">还没有内容，去写第一篇吧！</p>

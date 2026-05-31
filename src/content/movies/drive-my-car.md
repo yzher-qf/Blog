@@ -2,13 +2,15 @@
 title: "驾驶我的车"
 originalTitle: "ドライブ・マイ・カー"
 director: "滨口龙介"
-poster: "https://img9.doubanio.com/view/photo/l/public/p2687861855.jpg"
+poster: "https://lain.bgm.tv/pic/cover/l/e9/c9/371095_6Fro0.jpg"
 rating: 5
+bgmid: 371095
 watchDate: 2026-04-15
 year: 2021
 type: "电影"
 tags: ["日本电影", "村上春树", "戛纳", "文艺"]
 summary: "改编自村上春树短篇小说，一部关于失去与和解的三小时诗意旅程。"
+draft: true
 ---
 
 ## 三个小时，一点都不长
