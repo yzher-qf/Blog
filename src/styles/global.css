@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== CSS 自定义属性 ===== */
+:root {
+  --color-warm-50: #faf8f5;
+  --color-warm-100: #f5f0e8;
+  --color-warm-200: #ebe0cc;
+  --color-warm-800: #3d3226;
+  --color-warm-900: #2c241a;
+  --color-accent: #c75b39;
+}
+
+/* 书籍卡片封面悬停效果 */
+.book-card:hover .book-cover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* 瀑布流布局 */
+.masonry {
+  column-count: 2;
+  column-gap: 1.25rem;
+}
+@media (min-width: 768px) {
+  .masonry { column-count: 3; }
+}
+@media (min-width: 1100px) {
+  .masonry { column-count: 4; }
+}
+@media (min-width: 1440px) {
+  .masonry { column-count: 5; }
+}
+
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+}
+
+/* 星级评分 */
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  color: #f59e0b;
+}
+
+/* 时间线 */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-warm-200), transparent);
+}
+
+/* Markdown 内容样式 */
+.prose h2 { @apply text-2xl font-bold mt-8 mb-4 text-warm-900; }
+.prose h3 { @apply text-xl font-semibold mt-6 mb-3 text-warm-800; }
+.prose p { @apply my-4 leading-relaxed text-warm-800; }
+.prose blockquote {
+  @apply border-l-4 border-accent pl-4 italic text-warm-800 my-6;
+}
+.prose ul { @apply list-disc pl-6 my-4; }
+.prose ol { @apply list-decimal pl-6 my-4; }
+.prose a { @apply text-accent underline underline-offset-2 hover:no-underline; }
+.prose img { @apply rounded-lg my-6 max-w-full; }
+.prose hr { @apply my-8 border-warm-200; }

@@ -1,0 +1,87 @@
+---
+import StarRating from './StarRating.vue';
+import type { CollectionEntry } from 'astro:content';
+
+type Book = CollectionEntry<'books'>;
+const { book } = Astro.props as { book: Book };
+const { data } = book;
+
+// 格式化阅读时间
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
+
+const readingPeriod =
+  data.readingEnd
+    ? `${fmtDate(data.readingStart)} → ${fmtDate(data.readingEnd)}`
+    : `${fmtDate(data.readingStart)} 起`;
+---
+
+<a href={`/books/${book.slug}`} class="book-card block group">
+  <article
+    class="bg-white rounded-xl overflow-hidden shadow-sm border border-warm-200
+                transition-all duration-300 hover:shadow-lg"
+  >
+    <!-- 封面 -->
+    <div class="relative overflow-hidden bg-warm-100 aspect-[3/4]">
+      {data.cover ? (
+        <img
+          src={data.cover}
+          alt={data.title}
+          class="book-cover w-full h-full object-cover transition-transform duration-500"
+          loading="lazy"
+        />
+      ) : (
+        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-warm-200 to-warm-100">
+          <span class="text-4xl mb-2">📖</span>
+          <span class="text-warm-800 text-sm font-medium leading-tight line-clamp-3">{data.title}</span>
+          <span class="text-warm-600 text-xs mt-1">{data.author}</span>
+        </div>
+      )}
+      <!-- 状态标签 -->
+      <span
+        class={`absolute top-2 right-2 text-xs px-2 py-1 rounded-full font-medium backdrop-blur-sm
+          ${data.status === '已读' ? 'bg-green-500/80 text-white' : ''}
+          ${data.status === '在读' ? 'bg-blue-500/80 text-white' : ''}
+          ${data.status === '想读' ? 'bg-yellow-500/80 text-white' : ''}`}
+      >
+        {data.status}
+      </span>
+    </div>
+
+    <!-- 信息 -->
+    <div class="p-4">
+      <h3 class="font-serif font-bold text-lg leading-tight mb-1 group-hover:text-accent transition-colors">
+        {data.title}
+      </h3>
+      <p class="text-sm text-warm-800 mb-2">{data.author} 著</p>
+
+      <!-- 评分 -->
+      <div class="mb-2">
+        <StarRating rating={data.rating} size="sm" client:load />
+      </div>
+
+      <!-- 阅读时间 -->
+      <p class="text-xs text-warm-800 flex items-center gap-1">
+        <span>📅</span> {readingPeriod}
+      </p>
+
+      <!-- 标签 -->
+      {data.tags.length > 0 && (
+        <div class="flex flex-wrap gap-1 mt-3">
+          {data.tags.map((tag) => (
+            <a href={`/books?tag=${encodeURIComponent(tag)}`}
+              class="text-xs px-2 py-0.5 bg-warm-100 text-warm-800 rounded-full hover:bg-accent hover:text-white transition-colors"
+              onclick="event.stopPropagation()">
+              #{tag}
+            </a>
+          ))}
+        </div>
+      )}
+
+      <!-- 摘要 -->
+      {data.summary && (
+        <p class="text-sm text-warm-800 mt-3 line-clamp-2 leading-relaxed">{data.summary}</p>
+      )}
+    </div>
+  </article>
+</a>

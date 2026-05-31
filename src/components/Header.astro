@@ -1,0 +1,51 @@
+---
+const navItems = [
+  { href: '/', label: '首页' },
+  { href: '/books', label: '📚 读书笔记' },
+  { href: '/movies', label: '🎬 影评随笔' },
+  { href: '/diary', label: '📝 日记' },
+  { href: '/alist', label: '🗂️ 网盘' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50 bg-warm-50/80 backdrop-blur-md border-b border-warm-200">
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <a href="/" class="text-xl font-serif font-bold text-warm-900 hover:text-accent transition-colors">
+      📖 我的书架
+    </a>
+
+    <!-- 桌面导航 -->
+    <div class="hidden md:flex items-center gap-1">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
+              ? 'bg-warm-200 text-warm-900'
+              : 'text-warm-800 hover:bg-warm-100'
+          }`}
+        >
+          {item.label}
+        </a>
+      ))}
+    </div>
+
+    <!-- 移动端汉堡菜单（简化版） -->
+    <div class="md:hidden flex items-center gap-4">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          class={`text-sm font-medium ${
+            currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
+              ? 'text-accent'
+              : 'text-warm-800'
+          }`}
+        >
+          {item.label.replace(/^[📚🎬📝]\s*/, '')}
+        </a>
+      ))}
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const diaries = await getCollection('diary', ({ data }) => !data.draft);
+  return diaries.map((diary) => ({ params: { slug: diary.slug }, props: { diary } }));
+}
+
+type Props = { diary: CollectionEntry<'diary'> };
+const { diary } = Astro.props;
+const { data } = diary;
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+const { Content } = await diary.render();
+---
+
+<BaseLayout title={data.title} description={`${fmtDate(data.date)} 的日记`}>
+  <article class="max-w-3xl mx-auto">
+    <a href="/diary" class="text-sm text-warm-800 hover:text-accent transition-colors mb-8 inline-block">
+      ← 返回时间线
+    </a>
+
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-4">{data.title}</h1>
+
+      <div class="flex items-center gap-4 text-warm-800">
+        <time class="text-lg">{fmtDate(data.date)}</time>
+        {data.mood && <span class="text-2xl">{data.mood}</span>}
+        {data.weather && <span>{data.weather}</span>}
+      </div>
+
+      {data.tags.length > 0 && (
+        <div class="flex flex-wrap gap-2 mt-4">
+          {data.tags.map((tag) => (
+            <span class="text-sm px-3 py-1 bg-warm-200 text-warm-800 rounded-full">#{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

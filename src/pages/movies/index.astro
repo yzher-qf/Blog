@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MovieCard from '../../components/MovieCard.astro';
+import { getCollection } from 'astro:content';
+
+const movies = (await getCollection('movies', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.watchDate.getTime() - a.data.watchDate.getTime());
+---
+
+<BaseLayout title="影评随笔" description="看过的电影、剧集与纪录片">
+
+  <div class="mb-12">
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">🎬 影评随笔</h1>
+    <p class="text-warm-800">共 {movies.length} 部</p>
+  </div>
+
+  {
+    movies.length > 0 ? (
+      <div class="masonry">
+        {movies.map((movie) => <MovieCard {movie} />)}
+      </div>
+    ) : (
+      <div class="text-center py-20">
+        <p class="text-6xl mb-4">🎬</p>
+        <p class="text-lg text-warm-800">还没有影评</p>
+        <p class="text-sm text-warm-800 mt-2">在 src/content/movies/ 下创建你的第一篇影评</p>
+      </div>
+    )
+  }
+</BaseLayout>

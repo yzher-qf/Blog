@@ -1,0 +1,70 @@
+---
+import StarRating from './StarRating.vue';
+import type { CollectionEntry } from 'astro:content';
+
+type Movie = CollectionEntry<'movies'>;
+const { movie } = Astro.props as { movie: Movie };
+const { data } = movie;
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<a href={`/movies/${movie.slug}`} class="book-card block group">
+  <article
+    class="bg-white rounded-xl overflow-hidden shadow-sm border border-warm-200
+                transition-all duration-300 hover:shadow-lg"
+  >
+    <!-- 海报 -->
+    <div class="relative overflow-hidden bg-warm-100 aspect-[2/3]">
+      <img
+        src={data.poster}
+        alt={data.title}
+        class="book-cover w-full h-full object-cover transition-transform duration-500"
+        loading="lazy"
+      />
+      <span class="absolute top-2 right-2 text-xs px-2 py-1 rounded-full font-medium bg-purple-500/80 text-white backdrop-blur-sm">
+        {data.type}
+      </span>
+    </div>
+
+    <!-- 信息 -->
+    <div class="p-4">
+      <h3 class="font-serif font-bold text-lg leading-tight mb-1 group-hover:text-accent transition-colors">
+        {data.title}
+        {data.originalTitle && (
+          <span class="text-sm font-normal text-warm-800 block">{data.originalTitle}</span>
+        )}
+      </h3>
+      {data.director && (
+        <p class="text-sm text-warm-800 mb-1">🎥 {data.director}</p>
+      )}
+      <p class="text-xs text-warm-800 mb-2">{data.year} 年</p>
+
+      <!-- 评分 -->
+      <div class="mb-2">
+        <StarRating rating={data.rating} size="sm" client:load />
+      </div>
+
+      <!-- 观看日期 -->
+      <p class="text-xs text-warm-800 flex items-center gap-1">
+        <span>📅</span> {fmtDate(data.watchDate)}
+      </p>
+
+      <!-- 标签 -->
+      {data.tags.length > 0 && (
+        <div class="flex flex-wrap gap-1 mt-3">
+          {data.tags.map((tag) => (
+            <span class="text-xs px-2 py-0.5 bg-warm-100 text-warm-800 rounded-full">
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {data.summary && (
+        <p class="text-sm text-warm-800 mt-3 line-clamp-2 leading-relaxed">{data.summary}</p>
+      )}
+    </div>
+  </article>
+</a>

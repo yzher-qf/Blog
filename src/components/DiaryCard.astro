@@ -1,0 +1,54 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+type Diary = CollectionEntry<'diary'>;
+const { diary } = Astro.props as { diary: Diary };
+const { data, body } = diary;
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+// 取正文前 150 字做摘要
+const excerpt = body.slice(0, 150).replace(/[#*`\[\]()>_-]/g, '') + '…';
+---
+
+<a href={`/diary/${diary.slug}`} class="block group">
+  <article
+    class="bg-white rounded-xl p-6 shadow-sm border border-warm-200
+                transition-all duration-300 hover:shadow-lg relative ml-8"
+  >
+    <!-- 时间线圆点 -->
+    <div class="absolute -left-[2.25rem] top-6 w-4 h-4 bg-accent rounded-full border-2 border-warm-50 shadow"></div>
+
+    <!-- 日期与心情 -->
+    <div class="flex items-center gap-3 mb-3">
+      <time class="text-sm text-warm-800 font-medium">{fmtDate(data.date)}</time>
+      {data.mood && <span class="text-lg">{data.mood}</span>}
+      {data.weather && <span class="text-sm text-warm-800">{data.weather}</span>}
+    </div>
+
+    <!-- 标题 -->
+    <h3 class="font-serif font-bold text-lg mb-2 group-hover:text-accent transition-colors">
+      {data.title}
+    </h3>
+
+    <!-- 摘要 -->
+    <p class="text-sm text-warm-800 leading-relaxed line-clamp-3">{excerpt}</p>
+
+    <!-- 标签 -->
+    {data.tags.length > 0 && (
+      <div class="flex flex-wrap gap-1 mt-3">
+        {data.tags.map((tag) => (
+          <span class="text-xs px-2 py-0.5 bg-warm-100 text-warm-800 rounded-full">
+            #{tag}
+          </span>
+        ))}
+      </div>
+    )}
+  </article>
+</a>

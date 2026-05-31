@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StarRating from '../../components/StarRating.vue';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books', ({ data }) => !data.draft);
+  return books.map((book) => ({ params: { slug: book.slug }, props: { book } }));
+}
+
+type Props = { book: CollectionEntry<'books'> };
+const { book } = Astro.props;
+const { data, body } = book;
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const readingPeriod = data.readingEnd
+  ? `${fmtDate(data.readingStart)} ~ ${fmtDate(data.readingEnd)}`
+  : `${fmtDate(data.readingStart)} 起`;
+
+const { Content } = await book.render();
+
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+const slug = book.slug;
+const formats = ['epub', 'pdf', 'mobi', 'azw3', 'txt'];
+const downloads = formats
+  .filter((ext) => fs.existsSync(path.join(uploadsDir, `${slug}.${ext}`)))
+  .map((ext) => ({ ext, url: `/uploads/${slug}.${ext}` }));
+---
+
+<BaseLayout title={data.title} description={data.summary || `${data.title} - ${data.author} 读书笔记`}>
+  <article class="max-w-3xl mx-auto">
+    <a href="/books" class="text-sm text-warm-800 hover:text-accent transition-colors mb-8 inline-block">
+      ← 返回书架
+    </a>
+
+    <div class="flex flex-col md:flex-row gap-8 mb-12">
+      <div class="flex-shrink-0 w-48">
+        {data.cover ? (
+          <img src={data.cover} alt={data.title} class="w-full h-auto rounded-xl shadow-lg object-cover" />
+        ) : (
+          <div class="w-full aspect-[3/4] rounded-xl shadow-lg bg-gradient-to-br from-warm-200 to-warm-100 flex flex-col items-center justify-center p-4 text-center">
+            <span class="text-5xl mb-3">📖</span>
+            <span class="text-warm-800 text-sm font-medium leading-tight">{data.title}</span>
+            <span class="text-warm-600 text-xs mt-1">{data.author}</span>
+          </div>
+        )}
+      </div>
+
+      <div class="flex-1">
+        <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">{data.title}</h1>
+        <p class="text-lg text-warm-800 mb-4">{data.author} 著</p>
+
+        <div class="flex items-center gap-3 mb-4">
+          <StarRating rating={data.rating} size="lg" client:load />
+          <span class="text-warm-800">({data.rating}/5)</span>
+        </div>
+
+        <div class="flex flex-wrap gap-6 text-sm text-warm-800 mb-4">
+          <span>📅 {readingPeriod}</span>
+          <span>📌 {data.status}</span>
+          {data.pages && <span>📄 {data.pages} 页</span>}
+        </div>
+
+        {data.publisher && (
+          <p class="text-sm text-warm-800 mb-2">{data.publisher} · {data.publishedYear}</p>
+        )}
+
+        {data.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mt-4">
+            {data.tags.map((tag) => (
+              <a href={`/books?tag=${encodeURIComponent(tag)}`} class="text-sm px-3 py-1 bg-warm-200 text-warm-800 rounded-full hover:bg-accent hover:text-white transition-colors">#{tag}</a>
+            ))}
+          </div>
+        )}
+
+        {data.summary && (
+          <blockquote class="mt-6 border-l-4 border-accent pl-4 italic text-warm-800">{data.summary}</blockquote>
+        )}
+      </div>
+    </div>
+
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+
+    <div class="mt-12 pt-8 border-t border-warm-200">
+      <h2 class="text-xl font-serif font-bold text-warm-900 mb-4">📥 下载电子书</h2>
+      {downloads.length > 0 ? (
+        <div class="flex flex-wrap gap-3">
+          {downloads.map((d) => (
+            <a href={d.url} download class="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium text-sm shadow-sm">
+              <span class="text-lg">{d.ext === 'epub' ? '📗' : d.ext === 'pdf' ? '📕' : d.ext === 'mobi' ? '📘' : d.ext === 'azw3' ? '📙' : '📄'}</span>
+              .{d.ext.toUpperCase()}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="bg-warm-100 rounded-lg p-6 text-center">
+          <span class="text-3xl">📂</span>
+          <p class="mt-2 text-warm-800 text-sm">暂无电子书文件。将 <code class="bg-warm-200 px-1 rounded">{slug}.epub</code> / <code class="bg-warm-200 px-1 rounded">{slug}.pdf</code> 上传至 <code class="bg-warm-200 px-1 rounded">public/uploads/</code> 目录即可在此下载。</p>
+        </div>
+      )}
+    </div>
+  </article>
+</BaseLayout>

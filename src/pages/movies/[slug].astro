@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StarRating from '../../components/StarRating.vue';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const movies = await getCollection('movies', ({ data }) => !data.draft);
+  return movies.map((movie) => ({ params: { slug: movie.slug }, props: { movie } }));
+}
+
+type Props = { movie: CollectionEntry<'movies'> };
+const { movie } = Astro.props;
+const { data, body } = movie;
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const { Content } = await movie.render();
+---
+
+<BaseLayout title={data.title} description={data.summary || `${data.title} 影评`}>
+  <article class="max-w-3xl mx-auto">
+    <a href="/movies" class="text-sm text-warm-800 hover:text-accent transition-colors mb-8 inline-block">
+      ← 返回影评墙
+    </a>
+
+    <div class="flex flex-col md:flex-row gap-8 mb-12">
+      <!-- 海报 -->
+      <div class="flex-shrink-0">
+        <img
+          src={data.poster}
+          alt={data.title}
+          class="w-48 h-auto rounded-xl shadow-lg object-cover"
+        />
+      </div>
+
+      <!-- 元信息 -->
+      <div class="flex-1">
+        <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">{data.title}</h1>
+        {data.originalTitle && (
+          <p class="text-lg text-warm-800 mb-2">{data.originalTitle}</p>
+        )}
+
+        <div class="flex items-center gap-3 mb-4">
+          <StarRating rating={data.rating} size="lg" client:load />
+          <span class="text-warm-800">({data.rating}/5)</span>
+        </div>
+
+        <div class="flex flex-wrap gap-4 text-sm text-warm-800 mb-4">
+          {data.director && <span>🎥 {data.director}</span>}
+          <span>📅 {fmtDate(data.watchDate)}</span>
+          <span>📌 {data.year} 年</span>
+          <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
+            {data.type}
+          </span>
+        </div>
+
+        {data.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mt-4">
+            {data.tags.map((tag) => (
+              <span class="text-sm px-3 py-1 bg-warm-200 text-warm-800 rounded-full">#{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {data.summary && (
+          <blockquote class="mt-6 border-l-4 border-accent pl-4 italic text-warm-800">
+            {data.summary}
+          </blockquote>
+        )}
+      </div>
+    </div>
+
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

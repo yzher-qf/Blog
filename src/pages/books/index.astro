@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookCard from '../../components/BookCard.astro';
+import { getCollection } from 'astro:content';
+
+export const prerender = false;
+
+const allBooks = await getCollection('books', ({ data }) => !data.draft);
+
+const statusFilter = Astro.url.searchParams.get('status') || 'all';
+const sortBy = Astro.url.searchParams.get('sort') || 'recent';
+const tagFilter = Astro.url.searchParams.get('tag') || '';
+
+const byTag = tagFilter ? allBooks.filter((b) => b.data.tags.includes(tagFilter)) : allBooks;
+const filtered = statusFilter === 'all' ? byTag : byTag.filter((b) => b.data.status === statusFilter);
+
+const sorted = [...filtered].sort((a, b) => {
+  switch (sortBy) {
+    case 'title': return a.data.title.localeCompare(b.data.title, 'zh-Hans-CN', { numeric: true });
+    case 'oldest': return a.data.readingStart.getTime() - b.data.readingStart.getTime();
+    default: return b.data.readingStart.getTime() - a.data.readingStart.getTime();
+  }
+});
+
+const tagCounts = new Map<string, number>();
+allBooks.forEach((b) => b.data.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)));
+const allTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20);
+
+const statusOptions = [{ value: 'all', label: '全部' },{ value: '想读', label: '想读' },{ value: '在读', label: '在读' },{ value: '已读', label: '已读' }] as const;
+const sortOptions = [{ value: 'recent', label: '最近阅读' },{ value: 'oldest', label: '最早阅读' },{ value: 'title', label: '书名排序' }] as const;
+
+function buildUrl(opts: { sort?: string; status?: string; tag?: string }) {
+  const p = new URLSearchParams();
+  if (opts.sort && opts.sort !== 'recent') p.set('sort', opts.sort);
+  if (opts.status && opts.status !== 'all') p.set('status', opts.status);
+  if (opts.tag) p.set('tag', opts.tag);
+  const qs = p.toString();
+  return qs ? `/books?${qs}` : '/books';
+}
+---
+
+<BaseLayout title="读书笔记" description="我的书架——读过的每一本书">
+
+  <div class="mb-6">
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">📚 读书笔记</h1>
+    <p class="text-warm-800">共 {filtered.length} 本书{tagFilter && <span class="text-accent"> · 标签：#{tagFilter}</span>}</p>
+  </div>
+
+  <div class="space-y-4 mb-8 pb-6 border-b border-warm-200">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-sm text-warm-800 mr-1">状态：</span>
+        {statusOptions.map((opt) => (
+          <a href={buildUrl({ sort: sortBy, status: opt.value, tag: tagFilter })}
+            class={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${statusFilter === opt.value ? 'bg-accent text-white shadow-sm' : 'bg-warm-100 text-warm-800 hover:bg-warm-200'}`}>
+            {opt.label}
+          </a>
+        ))}
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-warm-800">排序：</span>
+        <select id="sort-select" class="px-3 py-1.5 rounded-lg border border-warm-300 bg-white text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-accent/30 cursor-pointer" onchange={`window.location=this.value`}>
+          {sortOptions.map((opt) => (
+            <option value={buildUrl({ sort: opt.value, status: statusFilter, tag: tagFilter })}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-sm text-warm-800 mr-1">标签：</span>
+      {tagFilter && (
+        <a href={buildUrl({ sort: sortBy, status: statusFilter })} class="px-3 py-1.5 rounded-full text-sm font-medium bg-accent text-white shadow-sm">#{tagFilter} ✕</a>
+      )}
+      {allTags.map(([tag, count]) => (
+        <a href={buildUrl({ sort: sortBy, status: statusFilter, tag: tagFilter === tag ? '' : tag })}
+          class={`px-3 py-1.5 rounded-full text-sm transition-colors ${tagFilter === tag ? 'bg-accent text-white' : 'bg-warm-100 text-warm-800 hover:bg-warm-200'}`}>
+          #{tag} <span class="opacity-50 text-xs">({count})</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const sel = document.getElementById('sort-select');
+      if (!sel) return;
+      const sp = new URLSearchParams(location.search);
+      const cur = sp.get('sort') || 'recent';
+      for (let i = 0; i < sel.options.length; i++) {
+        const val = sel.options[i].value;
+        const optSort = new URLSearchParams(val.split('?')[1] || '').get('sort') || 'recent';
+        if (optSort === cur) { sel.options[i].selected = true; break; }
+      }
+    })();
+  </script>
+
+  {
+    sorted.length > 0 ? (
+      <div class="masonry">
+        {sorted.map((book) => <BookCard {book} />)}
+      </div>
+    ) : (
+      <div class="text-center py-20">
+        <p class="text-6xl mb-4">📚</p>
+        <p class="text-lg text-warm-800">没有匹配的书籍</p>
+        <a href="/books" class="text-sm text-accent hover:underline mt-2 inline-block">查看全部</a>
+      </div>
+    )
+  }
+</BaseLayout>
