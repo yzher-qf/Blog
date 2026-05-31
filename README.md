@@ -117,13 +117,15 @@ summary: "《三国演义》—— 罗贯中 著。"
 cd /root/my-blog
 npm run dev          # 启动开发服务器 (localhost:4321)
 
-# 构建
-npm run build        # 生产构建
-npm run preview      # 预览构建结果
-
-# Git
+# Git 同步
 git add -A && git commit -m "xxx"
+git push              # 推送至 GitHub
+
+# 服务器拉取
+cd /root/my-blog && git pull   # Astro 自动热更新
 ```
+
+> `public/uploads/` 和 `public/covers/` 已加入 `.gitignore`，不同步到 GitHub，仅服务器本地保留。
 
 ## 服务器部署
 
