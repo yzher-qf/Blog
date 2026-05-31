@@ -1,14 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 
-export async function getStaticPaths() {
-  const diaries = await getCollection('diary', ({ data }) => !data.draft);
-  return diaries.map((diary) => ({ params: { slug: diary.slug }, props: { diary } }));
-}
+const { slug } = Astro.params;
+const diaries = await getCollection('diary', ({ data }) => !data.draft);
+const diary = diaries.find((d) => d.slug === slug);
+if (!diary) return Astro.redirect('/404');
 
-type Props = { diary: CollectionEntry<'diary'> };
-const { diary } = Astro.props;
 const { data } = diary;
 
 const fmtDate = (d: Date) =>

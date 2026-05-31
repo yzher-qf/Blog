@@ -1,17 +1,15 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StarRating from '../../components/StarRating.vue';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export async function getStaticPaths() {
-  const books = await getCollection('books', ({ data }) => !data.draft);
-  return books.map((book) => ({ params: { slug: book.slug }, props: { book } }));
-}
+const { slug } = Astro.params;
+const books = await getCollection('books', ({ data }) => !data.draft);
+const book = books.find((b) => b.slug === slug);
+if (!book) return Astro.redirect('/404');
 
-type Props = { book: CollectionEntry<'books'> };
-const { book } = Astro.props;
 const { data, body } = book;
 
 const fmtDate = (d: Date) =>
@@ -24,11 +22,10 @@ const readingPeriod = data.readingEnd
 const { Content } = await book.render();
 
 const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-const slug = book.slug;
 const formats = ['epub', 'pdf', 'mobi', 'azw3', 'txt'];
 const downloads = formats
-  .filter((ext) => fs.existsSync(path.join(uploadsDir, `${slug}.${ext}`)))
-  .map((ext) => ({ ext, url: `/uploads/${slug}.${ext}` }));
+  .filter((ext) => fs.existsSync(path.join(uploadsDir, `${book.slug}.${ext}`)))
+  .map((ext) => ({ ext, url: `/uploads/${book.slug}.${ext}` }));
 ---
 
 <BaseLayout title={data.title} description={data.summary || `${data.title} - ${data.author} 读书笔记`}>

@@ -1,15 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StarRating from '../../components/StarRating.vue';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 
-export async function getStaticPaths() {
-  const movies = await getCollection('movies', ({ data }) => !data.draft);
-  return movies.map((movie) => ({ params: { slug: movie.slug }, props: { movie } }));
-}
+const { slug } = Astro.params;
+const movies = await getCollection('movies', ({ data }) => !data.draft);
+const movie = movies.find((m) => m.slug === slug);
+if (!movie) return Astro.redirect('/404');
 
-type Props = { movie: CollectionEntry<'movies'> };
-const { movie } = Astro.props;
 const { data, body } = movie;
 
 const fmtDate = (d: Date) =>
