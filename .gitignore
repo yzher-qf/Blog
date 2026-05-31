@@ -3,3 +3,4 @@ dist/
 .astro/
 public/uploads/
 public/covers/
+src/content/.DS_Store
