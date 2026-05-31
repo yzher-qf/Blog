@@ -5,6 +5,7 @@ import tailwind from '@astrojs/tailwind';
 export default defineConfig({
   integrations: [vue(), tailwind()],
   output: 'server',
+  devToolbar: { enabled: false },
   server: {
     port: 4321,
     host: true,

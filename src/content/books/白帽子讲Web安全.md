@@ -1,7 +1,7 @@
 ---
 title: "白帽子讲Web安全"
 author: "吴翰清"
-cover: ""
+cover: "/covers/白帽子讲Web安全.jpg"
 rating: 0
 readingStart: 2026-05-31
 status: "想读"

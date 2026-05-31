@@ -1,5 +1,6 @@
 ---
 title: "嫌疑人X的献身"
+originalTitle: "容疑者Xの献身"
 author: "东野圭吾"
 cover: ""
 rating: 0

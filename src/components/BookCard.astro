@@ -52,6 +52,9 @@ const readingPeriod =
     <div class="p-4">
       <h3 class="font-serif font-bold text-lg leading-tight mb-1 group-hover:text-accent transition-colors">
         {data.title}
+        {data.originalTitle && (
+          <span class="text-xs font-normal text-warm-800 block">{data.originalTitle}</span>
+        )}
       </h3>
       <p class="text-sm text-warm-800 mb-2">{data.author} 著</p>
 

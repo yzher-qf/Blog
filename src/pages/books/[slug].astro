@@ -49,6 +49,9 @@ const downloads = formats
 
       <div class="flex-1">
         <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">{data.title}</h1>
+        {data.originalTitle && (
+          <p class="text-base text-warm-800 mb-1 italic">{data.originalTitle}</p>
+        )}
         <p class="text-lg text-warm-800 mb-4">{data.author} 著</p>
 
         <div class="flex items-center gap-3 mb-4">
@@ -87,9 +90,9 @@ const downloads = formats
     <div class="mt-12 pt-8 border-t border-warm-200">
       <h2 class="text-xl font-serif font-bold text-warm-900 mb-4">📥 下载电子书</h2>
       {downloads.length > 0 ? (
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap gap-3" id="download-links">
           {downloads.map((d) => (
-            <a href={d.url} download class="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium text-sm shadow-sm">
+            <a href={d.url} data-download-url={d.url} class="download-btn inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium text-sm shadow-sm cursor-pointer">
               <span class="text-lg">{d.ext === 'epub' ? '📗' : d.ext === 'pdf' ? '📕' : d.ext === 'mobi' ? '📘' : d.ext === 'azw3' ? '📙' : '📄'}</span>
               .{d.ext.toUpperCase()}
             </a>
@@ -102,5 +105,93 @@ const downloads = formats
         </div>
       )}
     </div>
+
+    <!-- 下载密码弹窗 -->
+    <div id="password-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;justify-content:center;align-items:center;">
+      <div style="background:#fff;border-radius:1rem;padding:2rem;max-width:360px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+        <p style="font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:#2c241a;">🔐 请输入下载密码</p>
+        <p id="pw-error" style="color:#c75b39;font-size:.875rem;margin-bottom:.75rem;display:none;">密码错误，请重试</p>
+        <input id="password-input" type="password" placeholder="输入密码" style="width:100%;padding:.625rem .875rem;border:1px solid #ebe0cc;border-radius:.5rem;font-size:1rem;outline:none;" />
+        <div style="display:flex;gap:.75rem;margin-top:1rem;">
+          <button id="pw-confirm-btn" style="flex:1;padding:.625rem;background:#c75b39;color:#fff;border:none;border-radius:.5rem;font-weight:600;cursor:pointer;">确认下载</button>
+          <button id="pw-cancel-btn" style="padding:.625rem 1rem;background:#f5f0e8;border:none;border-radius:.5rem;cursor:pointer;color:#3d3226;">取消</button>
+        </div>
+      </div>
+    </div>
   </article>
 </BaseLayout>
+
+<script>
+  const STORAGE_KEY = 'blog_dl_auth';
+  const PASSWORD = 'yzh20020313';
+  const TTL = 5 * 60 * 1000; // 5 分钟
+
+  let pendingUrl = null;
+  const modal = document.getElementById('password-modal');
+  const input = document.getElementById('password-input');
+  const error = document.getElementById('pw-error');
+
+  function isAuthenticated() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) return false;
+    try {
+      const { ts } = JSON.parse(data);
+      return Date.now() - ts < TTL;
+    } catch { return false; }
+  }
+
+  function authSuccess() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ts: Date.now() }));
+    if (pendingUrl) {
+      const a = document.createElement('a');
+      a.href = pendingUrl;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      pendingUrl = null;
+    }
+    closeModal();
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    error.style.display = 'none';
+    input.value = '';
+  }
+
+  function verifyPassword() {
+    if (input.value === PASSWORD) {
+      authSuccess();
+    } else {
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (isAuthenticated()) return; // 已有凭证，正常下载
+      e.preventDefault();
+      pendingUrl = btn.dataset.downloadUrl;
+      modal.style.display = 'flex';
+      error.style.display = 'none';
+      input.value = '';
+      setTimeout(() => input.focus(), 100);
+    });
+  });
+
+  // 确认按钮
+  document.getElementById('pw-confirm-btn').addEventListener('click', verifyPassword);
+  // 取消按钮
+  document.getElementById('pw-cancel-btn').addEventListener('click', closeModal);
+  // 回车键
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') verifyPassword();
+  });
+  // 点击遮罩关闭
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+</script>

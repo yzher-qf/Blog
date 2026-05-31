@@ -4,6 +4,7 @@ import { defineCollection, z } from 'astro:content';
 const books = defineCollection({
   schema: z.object({
     title: z.string(),
+    originalTitle: z.string().optional(), // 原版书名（中文书留空）
     author: z.string(),
     cover: z.string(),                    // 封面图片路径
     rating: z.number().min(0).max(5),     // 星级评分 0-5
