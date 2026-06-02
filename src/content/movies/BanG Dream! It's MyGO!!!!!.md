@@ -1,7 +1,7 @@
 ---
 title: "BanG Dream! It's MyGO!!!!!"
 originalTitle: "BanG Dream! It's MyGO!!!!!"
-poster: "https://lain.bgm.tv/pic/cover/l/e7/a7/428735_1v11n.jpg"
+poster: "/covers/BanG Dream! It's MyGO!!!!!.jpg"
 rating: 7
 bgmid: 428735
 watchDate: 2023-06-29

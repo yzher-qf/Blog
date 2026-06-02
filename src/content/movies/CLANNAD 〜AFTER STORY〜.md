@@ -1,7 +1,7 @@
 ---
 title: "CLANNAD 〜AFTER STORY〜"
 originalTitle: "CLANNAD 〜AFTER STORY〜"
-poster: "https://lain.bgm.tv/pic/cover/l/67/d1/876_dCfrd.jpg"
+poster: "/covers/CLANNAD 〜AFTER STORY〜.jpg"
 rating: 10
 bgmid: 876
 watchDate: 2008-10-02

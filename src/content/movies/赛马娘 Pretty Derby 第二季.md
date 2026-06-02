@@ -1,7 +1,7 @@
 ---
 title: "赛马娘 Pretty Derby 第二季"
 originalTitle: "ウマ娘 プリティーダービー Season 2"
-poster: "https://lain.bgm.tv/pic/cover/l/1c/6b/315574_tLgrT.jpg"
+poster: "/covers/赛马娘 Pretty Derby 第二季.jpg"
 rating: 8
 bgmid: 315574
 watchDate: 2021-01-04

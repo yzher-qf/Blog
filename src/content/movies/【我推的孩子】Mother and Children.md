@@ -1,7 +1,7 @@
 ---
 title: "【我推的孩子】Mother and Children"
 originalTitle: "【推しの子】Mother and Children"
-poster: "https://lain.bgm.tv/pic/cover/l/69/1e/424227_OhkuW.jpg"
+poster: "/covers/【我推的孩子】Mother and Children.jpg"
 rating: 7
 bgmid: 424227
 watchDate: 2023-03-17

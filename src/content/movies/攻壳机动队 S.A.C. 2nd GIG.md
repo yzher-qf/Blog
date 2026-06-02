@@ -1,7 +1,7 @@
 ---
 title: "攻壳机动队 S.A.C. 2nd GIG"
 originalTitle: "攻殻機動隊 S.A.C. 2nd GIG"
-poster: "https://lain.bgm.tv/pic/cover/l/a6/66/326_D8wjw.jpg"
+poster: "/covers/攻壳机动队 S.A.C. 2nd GIG.jpg"
 rating: 10
 bgmid: 326
 watchDate: 2004-01-01

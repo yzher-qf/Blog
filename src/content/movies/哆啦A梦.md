@@ -1,7 +1,7 @@
 ---
 title: "哆啦A梦"
 originalTitle: "ドラえもん"
-poster: "https://lain.bgm.tv/pic/cover/l/b4/4f/18692_Gilpl.jpg"
+poster: "/covers/哆啦A梦.jpg"
 rating: 8
 bgmid: 18692
 watchDate: 2005-04-15

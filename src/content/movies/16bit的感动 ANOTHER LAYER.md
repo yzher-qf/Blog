@@ -1,7 +1,7 @@
 ---
 title: "16bit的感动 ANOTHER LAYER"
 originalTitle: "16bitセンセーション ANOTHER LAYER"
-poster: "https://lain.bgm.tv/pic/cover/l/a7/73/413741_39Urq.jpg"
+poster: "/covers/16bit的感动 ANOTHER LAYER.jpg"
 rating: 6
 bgmid: 413741
 watchDate: 2023-10-04

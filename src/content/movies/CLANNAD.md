@@ -1,7 +1,7 @@
 ---
 title: "CLANNAD"
 originalTitle: "CLANNAD -クラナド-"
-poster: "https://lain.bgm.tv/pic/cover/l/28/38/51_z0Ly8.jpg"
+poster: "/covers/CLANNAD.jpg"
 rating: 9
 bgmid: 51
 watchDate: 2007-10-04

@@ -1,7 +1,7 @@
 ---
 title: "请问您今天要来点兔子吗？BLOOM"
 originalTitle: "ご注文はうさぎですか？ BLOOM"
-poster: "https://lain.bgm.tv/pic/cover/l/0a/16/260770_x4N8v.jpg"
+poster: "/covers/请问您今天要来点兔子吗？BLOOM.jpg"
 rating: 7
 bgmid: 260770
 watchDate: 2020-10-10

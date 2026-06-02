@@ -3,24 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import BookCard from '../../components/BookCard.astro';
 import { getCollection } from 'astro:content';
 
-export const prerender = false;
-
+// 静态预渲染，全量输出，客户端排序筛选
 const allBooks = await getCollection('books', ({ data }) => !data.draft);
-
-const statusFilter = Astro.url.searchParams.get('status') || 'all';
-const sortBy = Astro.url.searchParams.get('sort') || 'recent';
-const tagFilter = Astro.url.searchParams.get('tag') || '';
-
-const byTag = tagFilter ? allBooks.filter((b) => b.data.tags.includes(tagFilter)) : allBooks;
-const filtered = statusFilter === 'all' ? byTag : byTag.filter((b) => b.data.status === statusFilter);
-
-const sorted = [...filtered].sort((a, b) => {
-  switch (sortBy) {
-    case 'title': return a.data.title.localeCompare(b.data.title, 'zh-Hans-CN', { numeric: true });
-    case 'oldest': return a.data.readingStart.getTime() - b.data.readingStart.getTime();
-    default: return b.data.readingStart.getTime() - a.data.readingStart.getTime();
-  }
-});
 
 const tagCounts = new Map<string, number>();
 allBooks.forEach((b) => b.data.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1)));
@@ -28,83 +12,210 @@ const allTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20
 
 const statusOptions = [{ value: 'all', label: '全部' },{ value: '想读', label: '想读' },{ value: '在读', label: '在读' },{ value: '已读', label: '已读' }] as const;
 const sortOptions = [{ value: 'recent', label: '最近阅读' },{ value: 'oldest', label: '最早阅读' },{ value: 'title', label: '书名排序' }] as const;
-
-function buildUrl(opts: { sort?: string; status?: string; tag?: string }) {
-  const p = new URLSearchParams();
-  if (opts.sort && opts.sort !== 'recent') p.set('sort', opts.sort);
-  if (opts.status && opts.status !== 'all') p.set('status', opts.status);
-  if (opts.tag) p.set('tag', opts.tag);
-  const qs = p.toString();
-  return qs ? `/books?${qs}` : '/books';
-}
 ---
 
 <BaseLayout title="读书笔记" description="我的书架——读过的每一本书">
 
   <div class="mb-6">
     <h1 class="text-3xl md:text-4xl font-serif font-bold text-warm-900 mb-2">📚 读书笔记</h1>
-    <p class="text-warm-800">共 {filtered.length} 本书{tagFilter && <span class="text-accent"> · 标签：#{tagFilter}</span>}</p>
+    <p class="text-warm-800">共 <span id="book-count">{allBooks.length}</span> 本书<span id="tag-indicator" class="text-accent hidden"></span></p>
   </div>
 
+  <!-- 筛选栏 -->
   <div class="space-y-4 mb-8 pb-6 border-b border-warm-200">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap" id="status-filters">
         <span class="text-sm text-warm-800 mr-1">状态：</span>
         {statusOptions.map((opt) => (
-          <a href={buildUrl({ sort: sortBy, status: opt.value, tag: tagFilter })}
-            class={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${statusFilter === opt.value ? 'bg-accent text-white shadow-sm' : 'bg-warm-100 text-warm-800 hover:bg-warm-200'}`}>
+          <button data-status={opt.value}
+            class="filter-btn px-3 py-1.5 rounded-full text-sm font-medium transition-colors bg-warm-100 text-warm-800 hover:bg-warm-200">
             {opt.label}
-          </a>
+          </button>
         ))}
       </div>
       <div class="flex items-center gap-2">
         <span class="text-sm text-warm-800">排序：</span>
-        <select id="sort-select" class="px-3 py-1.5 rounded-lg border border-warm-300 bg-white text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-accent/30 cursor-pointer" onchange={`window.location=this.value`}>
+        <select id="sort-select" class="px-3 py-1.5 rounded-lg border border-warm-300 bg-white text-sm text-warm-800 focus:outline-none focus:ring-2 focus:ring-accent/30 cursor-pointer">
           {sortOptions.map((opt) => (
-            <option value={buildUrl({ sort: opt.value, status: statusFilter, tag: tagFilter })}>{opt.label}</option>
+            <option value={opt.value}>{opt.label}</option>
           ))}
         </select>
       </div>
     </div>
-    <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex items-center gap-2 flex-wrap" id="tag-filters">
       <span class="text-sm text-warm-800 mr-1">标签：</span>
-      {tagFilter && (
-        <a href={buildUrl({ sort: sortBy, status: statusFilter })} class="px-3 py-1.5 rounded-full text-sm font-medium bg-accent text-white shadow-sm">#{tagFilter} ✕</a>
-      )}
+      <button data-tag="" class="filter-tag px-3 py-1.5 rounded-full text-sm font-medium bg-accent text-white shadow-sm hidden" id="tag-clear">清除 ✕</button>
       {allTags.map(([tag, count]) => (
-        <a href={buildUrl({ sort: sortBy, status: statusFilter, tag: tagFilter === tag ? '' : tag })}
-          class={`px-3 py-1.5 rounded-full text-sm transition-colors ${tagFilter === tag ? 'bg-accent text-white' : 'bg-warm-100 text-warm-800 hover:bg-warm-200'}`}>
+        <button data-tag={tag}
+          class="filter-tag px-3 py-1.5 rounded-full text-sm transition-colors bg-warm-100 text-warm-800 hover:bg-warm-200">
           #{tag} <span class="opacity-50 text-xs">({count})</span>
-        </a>
+        </button>
       ))}
     </div>
   </div>
 
-  <script>
-    (function() {
-      const sel = document.getElementById('sort-select');
-      if (!sel) return;
-      const sp = new URLSearchParams(location.search);
-      const cur = sp.get('sort') || 'recent';
-      for (let i = 0; i < sel.options.length; i++) {
-        const val = sel.options[i].value;
-        const optSort = new URLSearchParams(val.split('?')[1] || '').get('sort') || 'recent';
-        if (optSort === cur) { sel.options[i].selected = true; break; }
-      }
-    })();
-  </script>
+  <!-- 书籍列表 -->
+  <div class="masonry" id="books-container">
+    {allBooks.map((book) => (
+      <div
+        class="book-item"
+        data-status={book.data.status}
+        data-title={book.data.title}
+        data-date={book.data.readingStart.toISOString().split('T')[0]}
+        data-tags={book.data.tags.join(',')}
+      >
+        <BookCard {book} />
+      </div>
+    ))}
+  </div>
 
-  {
-    sorted.length > 0 ? (
-      <div class="masonry">
-        {sorted.map((book) => <BookCard {book} />)}
-      </div>
-    ) : (
-      <div class="text-center py-20">
-        <p class="text-6xl mb-4">📚</p>
-        <p class="text-lg text-warm-800">没有匹配的书籍</p>
-        <a href="/books" class="text-sm text-accent hover:underline mt-2 inline-block">查看全部</a>
-      </div>
-    )
-  }
+  <div id="no-results" class="text-center py-20 hidden">
+    <p class="text-6xl mb-4">📚</p>
+    <p class="text-lg text-warm-800">没有匹配的书籍</p>
+    <a href="/books" class="text-sm text-accent hover:underline mt-2 inline-block">查看全部</a>
+  </div>
+
 </BaseLayout>
+
+<script>
+(function() {
+  const container = document.getElementById('books-container');
+  const countEl = document.getElementById('book-count');
+  const tagIndicator = document.getElementById('tag-indicator');
+  const noResults = document.getElementById('no-results');
+  const tagClear = document.getElementById('tag-clear');
+  const sortSelect = document.getElementById('sort-select');
+
+  if (!container) return;
+
+  const items = [...container.querySelectorAll('.book-item')];
+  const total = items.length;
+
+  // 读取 URL 参数
+  function getParams() {
+    const sp = new URLSearchParams(location.search);
+    return {
+      status: sp.get('status') || 'all',
+      sort: sp.get('sort') || 'recent',
+      tag: sp.get('tag') || '',
+    };
+  }
+
+  // 更新 URL（不刷新页面）
+  function updateURL(status, sort, tag) {
+    const p = new URLSearchParams();
+    if (sort && sort !== 'recent') p.set('sort', sort);
+    if (status && status !== 'all') p.set('status', status);
+    if (tag) p.set('tag', tag);
+    const qs = p.toString();
+    const url = qs ? `/books?${qs}` : '/books';
+    history.replaceState(null, '', url);
+  }
+
+  // 高亮筛选按钮
+  function highlightButtons(params) {
+    document.querySelectorAll('#status-filters .filter-btn').forEach(btn => {
+      const active = btn.dataset.status === params.status;
+      btn.className = active
+        ? 'filter-btn px-3 py-1.5 rounded-full text-sm font-medium transition-colors bg-accent text-white shadow-sm'
+        : 'filter-btn px-3 py-1.5 rounded-full text-sm font-medium transition-colors bg-warm-100 text-warm-800 hover:bg-warm-200';
+    });
+    document.querySelectorAll('#tag-filters .filter-tag').forEach(btn => {
+      if (btn === tagClear) return;
+      const active = btn.dataset.tag === params.tag;
+      btn.className = active
+        ? 'filter-tag px-3 py-1.5 rounded-full text-sm font-medium bg-accent text-white shadow-sm'
+        : 'filter-tag px-3 py-1.5 rounded-full text-sm transition-colors bg-warm-100 text-warm-800 hover:bg-warm-200';
+    });
+    tagClear.classList.toggle('hidden', !params.tag);
+    sortSelect.value = params.sort;
+  }
+
+  // 排序（DOM 重排）
+  function sortItems(itemArr, sortBy) {
+    return [...itemArr].sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return a.dataset.title.localeCompare(b.dataset.title, 'zh-Hans-CN', { numeric: true });
+        case 'oldest':
+          return a.dataset.date.localeCompare(b.dataset.date);
+        default: // recent
+          return b.dataset.date.localeCompare(a.dataset.date);
+      }
+    });
+  }
+
+  // 筛选
+  function filterItems(itemArr, status, tag) {
+    return itemArr.filter(item => {
+      if (status !== 'all' && item.dataset.status !== status) return false;
+      if (tag && !item.dataset.tags.split(',').includes(tag)) return false;
+      return true;
+    });
+  }
+
+  // 主渲染
+  function render() {
+    const params = getParams();
+    highlightButtons(params);
+
+    let visible = filterItems(items, params.status, params.tag);
+    visible = sortItems(visible, params.sort);
+
+    // 更新计数
+    countEl.textContent = visible.length;
+    if (params.tag) {
+      tagIndicator.textContent = ` · 标签：#${params.tag}`;
+      tagIndicator.classList.remove('hidden');
+    } else {
+      tagIndicator.classList.add('hidden');
+    }
+
+    // 重排 DOM
+    visible.forEach(el => container.appendChild(el));
+
+    // 隐藏不匹配的
+    const visibleSet = new Set(visible);
+    items.forEach(el => {
+      el.style.display = visibleSet.has(el) ? '' : 'none';
+    });
+
+    noResults.classList.toggle('hidden', visible.length > 0);
+    container.classList.toggle('hidden', visible.length === 0);
+  }
+
+  // 事件绑定
+  document.querySelectorAll('#status-filters .filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const params = getParams();
+      updateURL(btn.dataset.status, params.sort, params.tag);
+      render();
+    });
+  });
+
+  document.querySelectorAll('#tag-filters .filter-tag').forEach(btn => {
+    if (btn === tagClear) return;
+    btn.addEventListener('click', () => {
+      const params = getParams();
+      const newTag = params.tag === btn.dataset.tag ? '' : btn.dataset.tag;
+      updateURL(params.status, params.sort, newTag);
+      render();
+    });
+  });
+
+  tagClear.addEventListener('click', () => {
+    const params = getParams();
+    updateURL(params.status, params.sort, '');
+    render();
+  });
+
+  sortSelect.addEventListener('change', () => {
+    const params = getParams();
+    updateURL(params.status, sortSelect.value, params.tag);
+    render();
+  });
+
+  // 初始渲染
+  render();
+})();
+</script>

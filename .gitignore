@@ -5,3 +5,5 @@ public/uploads/
 public/covers/
 .DS_Store
 **/.DS_Store
+scripts/
+newbook/

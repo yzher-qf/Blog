@@ -2,7 +2,7 @@
 title: "驾驶我的车"
 originalTitle: "ドライブ・マイ・カー"
 director: "滨口龙介"
-poster: "https://lain.bgm.tv/pic/cover/l/e9/c9/371095_6Fro0.jpg"
+poster: "/covers/drive-my-car.jpg"
 rating: 5
 bgmid: 371095
 watchDate: 2026-04-15
