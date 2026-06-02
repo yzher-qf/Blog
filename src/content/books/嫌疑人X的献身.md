@@ -2,7 +2,7 @@
 title: "嫌疑人X的献身"
 originalTitle: "容疑者Xの献身"
 author: "东野圭吾"
-cover: ""
+cover: "/covers/嫌疑人X的献身.jpg"
 rating: 0
 readingStart: 2026-05-31
 status: "想读"
