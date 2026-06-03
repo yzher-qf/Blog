@@ -23,6 +23,13 @@ my-blog/
 ├── tailwind.config.mjs       # Tailwind 配置
 ├── tsconfig.json
 ├── .gitignore                # 忽略 node_modules, dist, .astro, public/uploads/
+├── scripts/
+│   ├── git-sync.sh           # Git 自动同步脚本（cron 每日 4:00 执行）
+│   ├── fetch_bangumi_covers.py
+│   ├── download_bangumi_covers.py
+│   ├── match_and_process_books.py
+│   ├── extract_covers.py
+│   └── rename_zlib_files.py
 ├── public/
 │   ├── favicon.svg
 │   └── uploads/              # 电子书存放目录（不入 git）
@@ -123,6 +130,21 @@ git push              # 推送至 GitHub
 
 # 服务器拉取
 cd /root/my-blog && git pull   # Astro 自动热更新
+```
+
+### 自动 Git 同步 (Cron)
+
+每天凌晨 4:00 自动执行 `scripts/git-sync.sh`，拉取远程更新并提交本地更改：
+
+```bash
+# 查看定时任务
+crontab -l
+
+# 手动执行同步
+/root/my-blog/scripts/git-sync.sh
+
+# 查看同步日志
+cat /root/my-blog/scripts/git-sync.log
 ```
 
 > `public/uploads/` 和 `public/covers/` 已加入 `.gitignore`，不同步到 GitHub，仅服务器本地保留。
