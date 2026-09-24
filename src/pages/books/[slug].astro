@@ -23,9 +23,29 @@ const { Content } = await book.render();
 
 const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 const formats = ['epub', 'pdf', 'mobi', 'azw3', 'txt'];
+
+// 主文件：public/uploads/{slug}.{ext}
 const downloads = formats
   .filter((ext) => fs.existsSync(path.join(uploadsDir, `${book.slug}.${ext}`)))
-  .map((ext) => ({ ext, url: `/uploads/${book.slug}.${ext}` }));
+  .map((ext) => ({ ext, label: '', url: `/uploads/${book.slug}.${ext}` }));
+
+// 多版本：public/uploads/{slug}/ 下的额外文件，一个文件一个下载项，标签取文件名
+const versionDir = path.join(uploadsDir, book.slug);
+const versions = fs.existsSync(versionDir) && fs.statSync(versionDir).isDirectory()
+  ? fs.readdirSync(versionDir)
+      .filter((f) => formats.includes(path.extname(f).slice(1).toLowerCase()))
+      .sort()
+      .map((f) => {
+        const ext = path.extname(f).slice(1).toLowerCase();
+        return {
+          ext,
+          label: path.basename(f, path.extname(f)),
+          url: `/uploads/${book.slug}/${encodeURIComponent(f)}`,
+        };
+      })
+  : [];
+
+const allDownloads = [...downloads, ...versions];
 ---
 
 <BaseLayout title={data.title} description={data.summary || `${data.title} - ${data.author} 读书笔记`}>
@@ -89,12 +109,12 @@ const downloads = formats
 
     <div class="mt-12 pt-8 border-t border-warm-200">
       <h2 class="text-xl font-serif font-bold text-warm-900 mb-4">📥 下载电子书</h2>
-      {downloads.length > 0 ? (
+      {allDownloads.length > 0 ? (
         <div class="flex flex-wrap gap-3" id="download-links">
-          {downloads.map((d) => (
+          {allDownloads.map((d) => (
             <a href={d.url} data-download-url={d.url} class="download-btn inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium text-sm shadow-sm cursor-pointer">
               <span class="text-lg">{d.ext === 'epub' ? '📗' : d.ext === 'pdf' ? '📕' : d.ext === 'mobi' ? '📘' : d.ext === 'azw3' ? '📙' : '📄'}</span>
-              .{d.ext.toUpperCase()}
+              {d.label ? `${d.label} · ${d.ext.toUpperCase()}` : `.${d.ext.toUpperCase()}`}
             </a>
           ))}
         </div>
